@@ -12,7 +12,7 @@
 // extern
 void LED_service(void)
 {
-	uint16_t led_port;
+	volatile uint16_t led_port;
 
 	led_port = GPIO_ReadOutputData(LED_PORT);
 	if (led_port & GREEN_LED)

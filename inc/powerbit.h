@@ -121,8 +121,7 @@ void powerbit_set_const(uint8_t type, int16_t value);
 
 uint16_t powerbit_get_voltage(void);
 uint16_t powerbit_get_peak(void);
-PWM_STATUS powerbit_get_pwm(void);
-powerbit_output_t powerbit_get_output(void);
+powerbit_output_t *powerbit_get_output(void);
 
 
 #endif /* POWERBIT_H_ */

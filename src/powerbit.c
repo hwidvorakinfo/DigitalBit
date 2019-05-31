@@ -7,14 +7,14 @@
 
 #include "powerbit.h"
 
-static uint16_t dma_data[IN_ADC_COUNT];
-static uint16_t volt_average[VOLTAVRGCOUNT];
-static powerbit_regulator_t regulator = {OUTPUT_VOLTAGE, PSD_KP, PSD_KI, PSD_KD, 0, 0, 0, CURRENTPEAKLIMIT, TRUE};
-static powerbit_output_t output = {OUTPUT0, LOW_PORT, LOW_PORT_PIN, PHASE0, PWM_DUTY_INIT, PWM_DUTY_MIN, PWM_DUTY_MAX, INIT};
-static uint32_t pwmfreq = PWMFREQ;
-static TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-static TIM_OCInitTypeDef  TIM_OCInitStructure;
-static TIM_BDTRInitTypeDef TIM_DeadTimeStructure;
+static volatile uint16_t dma_data[IN_ADC_COUNT];
+static volatile uint16_t volt_average[VOLTAVRGCOUNT];
+static volatile powerbit_regulator_t regulator = {OUTPUT_VOLTAGE, PSD_KP, PSD_KI, PSD_KD, 0, 0, 0, CURRENTPEAKLIMIT, TRUE};
+static volatile powerbit_output_t output = {OUTPUT0, LOW_PORT, LOW_PORT_PIN, PHASE0, PWM_DUTY_INIT, PWM_DUTY_MIN, PWM_DUTY_MAX, INIT};
+static volatile uint32_t pwmfreq = PWMFREQ;
+static volatile TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
+static volatile TIM_OCInitTypeDef  TIM_OCInitStructure;
+static volatile TIM_BDTRInitTypeDef TIM_DeadTimeStructure;
 
 void powerbit_init(void)
 {
@@ -131,8 +131,8 @@ void powerbit_adcdma_init(void)
 
 void powerbit_set_freq(uint32_t freq)
 {
-	uint32_t TimerPeriod;
-	uint16_t Channel3Pulse;
+	volatile uint32_t TimerPeriod;
+	volatile uint16_t Channel3Pulse;
 
 	TIM_Cmd(PWM_TIM, DISABLE);
 	TIM_CtrlPWMOutputs(PWM_TIM, DISABLE);
@@ -148,11 +148,11 @@ void powerbit_set_freq(uint32_t freq)
 	TIM_TimeBaseStructure.TIM_Period = TimerPeriod;
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
-	TIM_TimeBaseInit(PWM_TIM, &TIM_TimeBaseStructure);
+	TIM_TimeBaseInit(PWM_TIM, (TIM_TimeBaseInitTypeDef *)&TIM_TimeBaseStructure);
 
 	// OC configuration
 	TIM_OCInitStructure.TIM_Pulse = Channel3Pulse;
-	TIM_OC3Init(PWM_TIM, &TIM_OCInitStructure);
+	TIM_OC3Init(PWM_TIM, (TIM_OCInitTypeDef *)&TIM_OCInitStructure);
 	TIM_OC3PreloadConfig(PWM_TIM, TIM_OCPreload_Enable);
 
 	TIM_Cmd(PWM_TIM, ENABLE);
@@ -161,8 +161,8 @@ void powerbit_set_freq(uint32_t freq)
 
 void powerbit_pwm_init(void)
 {
-	uint32_t TimerPeriod = 0;
-	uint16_t Channel3Pulse = 0;
+	volatile uint32_t TimerPeriod = 0;
+	volatile uint16_t Channel3Pulse = 0;
 
 	  /* TIM1 Configuration ---------------------------------------------------
 	   Generate 7 PWM signals with 4 different duty cycles:
@@ -203,7 +203,7 @@ void powerbit_pwm_init(void)
 	TIM_TimeBaseStructure.TIM_ClockDivision = 0;
 	TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
 
-	TIM_TimeBaseInit(PWM_TIM, &TIM_TimeBaseStructure);
+	TIM_TimeBaseInit(PWM_TIM, (TIM_TimeBaseInitTypeDef *)&TIM_TimeBaseStructure);
 
 	/* Channel 3 Configuration in PWM mode */
 	TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM2;
@@ -214,7 +214,7 @@ void powerbit_pwm_init(void)
 	TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_Low;
 	TIM_OCInitStructure.TIM_OCIdleState = TIM_OCIdleState_Set;
 	TIM_OCInitStructure.TIM_OCNIdleState = TIM_OCIdleState_Reset;
-	TIM_OC3Init(PWM_TIM, &TIM_OCInitStructure);
+	TIM_OC3Init(PWM_TIM, (TIM_OCInitTypeDef *)&TIM_OCInitStructure);
 
 	TIM_OC3PreloadConfig(PWM_TIM, TIM_OCPreload_Enable);
 
@@ -226,7 +226,7 @@ void powerbit_pwm_init(void)
 	TIM_DeadTimeStructure.TIM_Break = TIM_Break_Enable;
 	TIM_DeadTimeStructure.TIM_BreakPolarity = TIM_BreakPolarity_High;
 	TIM_DeadTimeStructure.TIM_AutomaticOutput = TIM_AutomaticOutput_Enable;
-	TIM_BDTRConfig(PWM_TIM, &TIM_DeadTimeStructure);
+	TIM_BDTRConfig(PWM_TIM, (TIM_BDTRInitTypeDef *)&TIM_DeadTimeStructure);
 
 	/* PWM_TIM counter enable */
 	TIM_Cmd(PWM_TIM, ENABLE);
@@ -238,7 +238,7 @@ void powerbit_pwm_init(void)
 void powerbit_set_duty(uint16_t duty)
 {
 	volatile uint16_t Channel3Pulse = 0;
-	const uint16_t TimerPeriod = (SYSTEMCORECLOCK / pwmfreq ) - 1;
+	volatile uint16_t TimerPeriod = (SYSTEMCORECLOCK / pwmfreq ) - 1;
 
 	Channel3Pulse = (uint16_t) (((uint32_t) duty * (TimerPeriod - 1)) / PWM_MAX);
 	PWM_TIM->CCR3 = Channel3Pulse;
@@ -266,9 +266,11 @@ void powerbit_set_const(uint8_t type, int16_t value)
 		case 'S':
 			regulator.psd_ki = value;
 		break;
+
 		case 'D':
 			regulator.psd_kd = value;
 		break;
+
 		default:
 		break;
 	}
@@ -303,10 +305,10 @@ void powerbit_curr_peak(void)
 
 void powerbit_volt_avrg(void)
 {
-	static uint8_t index = 0;
+	static volatile uint8_t index = 0;
 
 	volt_average[index++] = dma_data[VOLTAGE];
-	if (index > VOLTAVRGCOUNT)
+	if (index >= VOLTAVRGCOUNT)
 	{
 		index = 0;
 	}
@@ -353,7 +355,7 @@ void powerbit_psd_calculation(void)
 	psd_value = regulator.psd_kp/10 * psd_error + psd_intreg + regulator.psd_kd/10 * (psd_error - regulator.psd_error);
 
 	// akcni zasah podle hodnoty
-	int16_t pwm;
+	volatile int16_t pwm;
 
 	// test prekroceni citlivosti
 	if (psd_value > PSDVALUEUPPERLIMIT)
@@ -490,8 +492,8 @@ void powerbit_set_voltage(uint16_t voltage)
 
 uint16_t powerbit_get_voltage(void)
 {
-	uint8_t i;
-	uint32_t sum = 0;
+	volatile uint8_t i;
+	volatile uint32_t sum = 0;
 
 	for (i = 0; i < VOLTAVRGCOUNT; i++)
 	{
@@ -507,17 +509,19 @@ uint16_t powerbit_get_peak(void)
 	return regulator.currentpeak;
 }
 
-PWM_STATUS powerbit_get_pwm(void)
+powerbit_output_t* powerbit_get_output(void)
 {
-	return output.pwmstatus;
-}
-
-powerbit_output_t powerbit_get_output(void)
-{
-	return output;
+	return (powerbit_output_t*)&output;
 }
 
 void powerbit_set_current(uint16_t current)
 {
 	regulator.currentpeak = current;
 }
+
+/*
+#pragma GCC push_options
+#pragma GCC optimize ("O0")
+#pragma GCC pop_options
+*/
+

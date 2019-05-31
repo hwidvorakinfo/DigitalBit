@@ -10,23 +10,23 @@
 
 // prikazy
 static const uint8_t COMMAND_ON[] = "ON";
-static command_t command_on = {(uint8_t *)&COMMAND_ON, &cmd_powerbit_on, TRUE};			// prikaz ON, zapni se
+static volatile command_t command_on = {(uint8_t *)&COMMAND_ON, &cmd_powerbit_on, TRUE};			// prikaz ON, zapni se
 static const uint8_t COMMAND_OFF[] = "OFF";
-static command_t command_off = {(uint8_t *)&COMMAND_OFF, &cmd_powerbit_off, TRUE};		// prikaz OFF, vypni se
+static volatile command_t command_off = {(uint8_t *)&COMMAND_OFF, &cmd_powerbit_off, TRUE};		// prikaz OFF, vypni se
 static const uint8_t COMMAND_VOLT[] = "VOLT**.**";
-static command_t command_volt = {(uint8_t *)&COMMAND_VOLT, &cmd_powerbit_volt, TRUE};	// prikaz VOLT**.*, nastav vystup
+static volatile command_t command_volt = {(uint8_t *)&COMMAND_VOLT, &cmd_powerbit_volt, TRUE};	// prikaz VOLT**.*, nastav vystup
 static const uint8_t COMMAND_CURR[] = "CURR****";
-static command_t command_curr = {(uint8_t *)&COMMAND_CURR, &cmd_powerbit_curr, TRUE};	// prikaz CURR****, nastav maximalni proud
+static volatile command_t command_curr = {(uint8_t *)&COMMAND_CURR, &cmd_powerbit_curr, TRUE};	// prikaz CURR****, nastav maximalni proud
 static const uint8_t COMMAND_STAT[] = "STAT";
-static command_t command_stat = {(uint8_t *)&COMMAND_STAT, &cmd_powerbit_stat, TRUE};	// prikaz STAT, stav zdroje
+static volatile command_t command_stat = {(uint8_t *)&COMMAND_STAT, &cmd_powerbit_stat, TRUE};	// prikaz STAT, stav zdroje
 static const uint8_t COMMAND_FREQ[] = "FREQ******";
-static command_t command_freq = {(uint8_t *)&COMMAND_FREQ, &cmd_powerbit_freq, TRUE};	// prikaz FREQ******, nastav frekvenci pwm
+static volatile command_t command_freq = {(uint8_t *)&COMMAND_FREQ, &cmd_powerbit_freq, TRUE};	// prikaz FREQ******, nastav frekvenci pwm
 static const uint8_t COMMAND_MAX[] = "MAX**";
-static command_t command_max = {(uint8_t *)&COMMAND_MAX, &cmd_powerbit_dutymax, TRUE};	// prikaz MAX**, nastav maximalni povolenou duty
+static volatile command_t command_max = {(uint8_t *)&COMMAND_MAX, &cmd_powerbit_dutymax, TRUE};	// prikaz MAX**, nastav maximalni povolenou duty
 static const uint8_t COMMAND_MIN[] = "MIN**";
-static command_t command_min = {(uint8_t *)&COMMAND_MIN, &cmd_powerbit_dutymin, TRUE};	// prikaz MIN**, nastav minimalni povolenou duty
+static volatile command_t command_min = {(uint8_t *)&COMMAND_MIN, &cmd_powerbit_dutymin, TRUE};	// prikaz MIN**, nastav minimalni povolenou duty
 static const uint8_t COMMAND_KX[] = "K****.*";
-static command_t command_kx = {(uint8_t *)&COMMAND_KX, &cmd_powerbit_const, TRUE};		// prikaz K****.*, nastav danou konstantu zesileni
+static volatile command_t command_kx = {(uint8_t *)&COMMAND_KX, &cmd_powerbit_const, TRUE};		// prikaz K****.*, nastav danou konstantu zesileni
 
 
 uint8_t commands_parse(uint8_t *pattern, uint8_t *command);
@@ -45,10 +45,10 @@ void commands_process(void)
 			p_func = command_on.p_itemfunc;
 			p_func(NULL);
 		}
-		return;
+		//return;
 	}
 	// parsing prikazu OFF
-	if (commands_parse(command_off.command, get_Rx_buffer()))
+	else if (commands_parse(command_off.command, get_Rx_buffer()))
 	{
 		if (command_off.enabled)
 		{
@@ -56,10 +56,10 @@ void commands_process(void)
 			p_func = command_off.p_itemfunc;
 			p_func(NULL);
 		}
-		return;
+		//return;
 	}
 	// parsing prikazu VOLT**.*
-	if (commands_parse(command_volt.command, get_Rx_buffer()))
+	else if (commands_parse(command_volt.command, get_Rx_buffer()))
 	{
 		if (command_volt.enabled)
 		{
@@ -67,10 +67,10 @@ void commands_process(void)
 			p_func = command_volt.p_itemfunc;
 			p_func(get_Rx_buffer());
 		}
-		return;
+		//return;
 	}
 	// parsing prikazu CURR****
-	if (commands_parse(command_curr.command, get_Rx_buffer()))
+	else if (commands_parse(command_curr.command, get_Rx_buffer()))
 	{
 		if (command_curr.enabled)
 		{
@@ -78,10 +78,10 @@ void commands_process(void)
 			p_func = command_curr.p_itemfunc;
 			p_func(get_Rx_buffer());
 		}
-		return;
+		//return;
 	}
 	// parsing prikazu STAT
-	if (commands_parse(command_stat.command, get_Rx_buffer()))
+	else if (commands_parse(command_stat.command, get_Rx_buffer()))
 	{
 		if (command_stat.enabled)
 		{
@@ -89,10 +89,10 @@ void commands_process(void)
 			p_func = command_stat.p_itemfunc;
 			p_func(get_Rx_buffer());
 		}
-		return;
+		//return;
 	}
 	// parsing prikazu FREQ*******
-	if (commands_parse(command_freq.command, get_Rx_buffer()))
+	else if (commands_parse(command_freq.command, get_Rx_buffer()))
 	{
 		if (command_freq.enabled)
 		{
@@ -100,10 +100,10 @@ void commands_process(void)
 			p_func = command_freq.p_itemfunc;
 			p_func(get_Rx_buffer());
 		}
-		return;
+		//return;
 	}
 	// parsing prikazu MAX**
-	if (commands_parse(command_max.command, get_Rx_buffer()))
+	else if (commands_parse(command_max.command, get_Rx_buffer()))
 	{
 		if (command_max.enabled)
 		{
@@ -111,10 +111,10 @@ void commands_process(void)
 			p_func = command_max.p_itemfunc;
 			p_func(get_Rx_buffer());
 		}
-		return;
+		//return;
 	}
 	// parsing prikazu MIN**
-	if (commands_parse(command_min.command, get_Rx_buffer()))
+	else if (commands_parse(command_min.command, get_Rx_buffer()))
 	{
 		if (command_min.enabled)
 		{
@@ -122,10 +122,10 @@ void commands_process(void)
 			p_func = command_min.p_itemfunc;
 			p_func(get_Rx_buffer());
 		}
-		return;
+		//return;
 	}
 	// parsing prikazu K****.*
-	if (commands_parse(command_kx.command, get_Rx_buffer()))
+	else if (commands_parse(command_kx.command, get_Rx_buffer()))
 	{
 		if (command_kx.enabled)
 		{
@@ -133,12 +133,13 @@ void commands_process(void)
 			p_func = command_kx.p_itemfunc;
 			p_func(get_Rx_buffer());
 		}
-		return;
+		//return;
 	}
-
-
-	// zbyva jiz jen posledni varianta - spatny prikaz
-	commands_wrong_cmd();
+	else
+	{
+		// zbyva jiz jen posledni varianta - spatny prikaz
+		commands_wrong_cmd();
+	}
 }
 
 
@@ -323,7 +324,7 @@ COMMAND_STATUS cmd_powerbit_stat(void *p_i)
 	text[PEAKVALUEOFFSET+3] = value + '0';
 
 	// vypis duty
-	value = powerbit_get_output().duty;
+	value = powerbit_get_output()->duty;
 	value /= 100;
 	text[DUTYOFFSET] = value / 10 + '0';
 	value %= 10;
@@ -332,7 +333,7 @@ COMMAND_STATUS cmd_powerbit_stat(void *p_i)
 
 /*
 	// vypis stav PWM
-	value = powerbit_get_pwm();
+	value = powerbit_get_output->pwmstatus();
 	switch (value)
 	{
 		case PWMSTABLE:
@@ -436,7 +437,7 @@ COMMAND_STATUS cmd_powerbit_dutymax(void *p_i)
 	if ((cmd_isnumber(&p_int[DUTYOFFSET])) && (cmd_isnumber(&p_int[DUTYOFFSET+1])))
 	{
 		duty = 10 * (p_int[DUTYOFFSET] - '0') + (p_int[DUTYOFFSET+1] - '0');
-		if ((duty > PWM_DUTY_MAX/100) || (duty < powerbit_get_output().dutymin))
+		if ((duty > PWM_DUTY_MAX/100) || (duty < powerbit_get_output()->dutymin))
 		{
 			// duty je prilis velka
 			retval = COMMANDWRONG;
@@ -475,7 +476,7 @@ COMMAND_STATUS cmd_powerbit_dutymin(void *p_i)
 	if ((cmd_isnumber(&p_int[DUTYOFFSET])) && (cmd_isnumber(&p_int[DUTYOFFSET+1])))
 	{
 		duty = 10 * (p_int[DUTYOFFSET] - '0') + (p_int[DUTYOFFSET+1] - '0');
-		if (duty > powerbit_get_output().dutymax)
+		if (duty > powerbit_get_output()->dutymax)
 		{
 			// duty je prilis velka
 			retval = COMMANDWRONG;
@@ -514,7 +515,7 @@ COMMAND_STATUS cmd_powerbit_const(void *p_i)
 	// urceni hodnoty
 	if ((cmd_isnumber(&p_int[CONSTNUM])) && (cmd_isnumber(&p_int[CONSTNUM+1])) && (cmd_isnumber(&p_int[CONSTNUM+3])))
 	{
-		value = 100 * (p_int[CONSTNUM] - '0') + 10*(p_int[CONSTNUM+1] - '0') + (p_int[CONSTNUM+3] - '0');
+		value = 100*(p_int[CONSTNUM] - '0') + 10*(p_int[CONSTNUM+1] - '0') + (p_int[CONSTNUM+3] - '0');
 		if (p_int[CONSTSIGN] == '-')
 		{
 			value *= -1;

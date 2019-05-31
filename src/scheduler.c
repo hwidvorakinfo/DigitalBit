@@ -1,7 +1,7 @@
 #include "scheduler.h"
 #include "errorcodes.h"
 
-static sTask SCH_tasks_G[SCH_MAX_TASKS];					// The array of tasks
+static volatile sTask SCH_tasks_G[SCH_MAX_TASKS];					// The array of tasks
 static uint8_t Error_code_G = 0;
 //static uint16_t Error_tick_count_G;					// Keeps track of time since last error was recorded (see below)
 //static uint8_t Last_error_code_G;					// The code of the last error (reset after ~1 minute)

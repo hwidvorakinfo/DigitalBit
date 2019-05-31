@@ -34,7 +34,7 @@ typedef struct {
 	int16_t psd_intreg;
 	int16_t psd_error;
 	int16_t psd_value;
-	int16_t currentpeak;
+	uint16_t currentpeak;
 	uint8_t enabled;
 } powerbit_regulator_t;
 
